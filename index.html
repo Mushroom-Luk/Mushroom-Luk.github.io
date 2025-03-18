@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MTR Connection Planner</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            'mtr-red': '#D9232E',
+            'mtr-blue': '#1E346E',
+            'mtr-teal': '#C4E7F2',
+            'mtr-orange': '#F86B2D',
+            'mtr-grey': '#F7F7F7',
+            'mtr-yellow': '#F8C300',
+            'tcl-orange': '#F8870E',
+            'drl-purple': '#A54399'
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+    }
+    .mtr-gradient {
+      background: linear-gradient(to bottom, #FFFFFF 0%, #C4E7F2 100%);
+    }
+    .nav-tab {
+      position: relative;
+    }
+    .nav-tab::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background-color: transparent;
+      transition: background-color 0.3s;
+    }
+    .nav-tab.active::after {
+      background-color: #D9232E;
+    }
+  </style>
+</head>
+<body class="mtr-gradient min-h-screen text-gray-900">
+  <!-- Check dark mode preference -->
+  <script>
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      document.documentElement.classList.add('dark');
+    }
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+      if (event.matches) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    });
+  </script>
+
+  <!-- Header -->
+  <header class="bg-white dark:bg-mtr-blue px-4 py-3 shadow-md">
+    <div class="container mx-auto flex items-center">
+      <div class="flex items-center">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 70 70" class="h-12 w-12 mr-2">
+          <circle cx="35" cy="35" r="35" fill="#D9232E"/>
+          <path d="M35,13.5c-12.8,0-23.1,10.3-23.1,23.1c0,12.8,10.3,23.1,23.1,23.1s23.1-10.3,23.1-23.1C58.1,23.8,47.8,13.5,35,13.5z M35,56.1c-10.8,0-19.5-8.7-19.5-19.5c0-10.8,8.7-19.5,19.5-19.5s19.5,8.7,19.5,19.5C54.5,47.4,45.8,56.1,35,56.1z" fill="white"/>
+          <path d="M47.9,31.5c-2.8-3.3-8.1-7.5-13-7.5c-4.9,0-10.1,4.2-13,7.5c-2.8,3.3-4.2,4.8-4.2,10c0,5.2,1.4,6.8,4.2,10c2.8,3.3,8.1,7.5,13,7.5c4.9,0,10.1-4.2,13-7.5c2.8-3.3,4.2-4.8,4.2-10C52.1,36.4,50.7,34.8,47.9,31.5z M35,49.1c-4.2,0-7.6-3.4-7.6-7.6c0-4.2,3.4-7.6,7.6-7.6c4.2,0,7.6,3.4,7.6,7.6C42.6,45.7,39.2,49.1,35,49.1z" fill="white"/>
+        </svg>
+        <div>
+          <div class="text-lg font-bold text-mtr-blue dark:text-white">MTR</div>
+          <div class="text-xs text-gray-500 dark:text-gray-300">Connection Planner</div>
+        </div>
+      </div>
+      <div class="ml-auto flex items-center space-x-4">
+        <span class="text-sm text-gray-600 dark:text-gray-300">English</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Navigation -->
+  <div class="bg-mtr-blue text-white">
+    <div class="container mx-auto flex overflow-x-auto">
+      <div class="nav-tab active py-3 px-6 whitespace-nowrap font-medium">TRAIN CONNECTION PLANNER</div>
+    </div>
+  </div>
+
+  <div class="container mx-auto px-4 py-6 max-w-3xl">
+    <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+      <div class="mb-6">
+        <h2 class="text-lg font-semibold mb-4 text-mtr-blue">Choose Your Destination</h2>
+        <div class="grid grid-cols-2 gap-4">
+          <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 flex items-center">
+            <div class="w-3 h-10 bg-tcl-orange rounded-sm mr-3"></div>
+            <div>
+              <div class="text-sm text-gray-500">Tung Chung Line</div>
+              <button id="tuc-btn" class="flex items-center space-x-2 mt-1">
+                <span class="w-3 h-3 rounded-full bg-gray-300"></span>
+                <span>Tung Chung (TUC)</span>
+              </button>
+            </div>
+          </div>
+          <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 flex items-center">
+            <div class="w-3 h-10 bg-tcl-orange rounded-sm mr-3"></div>
+            <div>
+              <div class="text-sm text-gray-500">Tung Chung Line</div>
+              <button id="hok-btn" class="flex items-center space-x-2 mt-1">
+                <span class="w-3 h-3 rounded-full bg-red-500"></span>
+                <span>Hong Kong (HOK)</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="loading" class="flex items-center justify-center py-8">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-mtr-red"></div>
+      </div>
+
+      <div id="error" class="hidden bg-red-100 text-red-700 p-4 rounded-lg mt-4">
+        Error loading data. Please try again.
+      </div>
+
+      <div id="results" class="hidden">
+        <div class="mb-6">
+          <div class="flex items-center mb-3">
+            <div class="w-3 h-6 bg-drl-purple rounded-sm mr-3"></div>
+            <h3 class="font-semibold">Disneyland Resort Line Departures</h3>
+          </div>
+          <div id="dis-trains" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
+        </div>
+
+        <div class="mb-6">
+          <div class="flex items-center mb-3">
+            <div class="w-3 h-6 bg-tcl-orange rounded-sm mr-3"></div>
+            <h3 class="font-semibold">Connection Options at Sunny Bay</h3>
+          </div>
+          <div id="connections" class="space-y-4"></div>
+        </div>
+      </div>
+
+      <div class="mt-6">
+        <button id="refresh-btn" class="w-full py-3 px-4 bg-mtr-blue hover:bg-blue-800 text-white rounded-lg transition-all">
+          Refresh Data
+        </button>
+      </div>
+    </div>
+
+    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-sm text-gray-700">
+      <div class="flex items-start">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-500 mr-2 mt-0.5 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+        </svg>
+        <div>
+          <p class="mb-1"><strong>How this works:</strong> This app shows the best connections between Disneyland Resort Line and Tung Chung Line at Sunny Bay station.</p>
+          <p>Journey time from Disneyland to Sunny Bay is approximately 6 minutes.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Selected destination (default: DOWN to Hong Kong)
+    let selectedDirection = 'DOWN';
+    
+    // API URLs
+    const DRL_API = 'https://rt.data.gov.hk/v1/transport/mtr/getSchedule.php?line=DRL&sta=DIS';
+    const TCL_API = 'https://rt.data.gov.hk/v1/transport/mtr/getSchedule.php?line=TCL&sta=SUN';
+    
+    // DOM elements
+    const tucButton = document.getElementById('tuc-btn');
+    const hokButton = document.getElementById('hok-btn');
+    const loadingElement = document.getElementById('loading');
+    const errorElement = document.getElementById('error');
+    const resultsElement = document.getElementById('results');
+    const disTrainsElement = document.getElementById('dis-trains');
+    const connectionsElement = document.getElementById('connections');
+    const refreshButton = document.getElementById('refresh-btn');
+    
+    // Update selection indication
+    function updateSelectionUI() {
+      if (selectedDirection === 'UP') {
+        tucButton.querySelector('span:first-child').classList.remove('bg-gray-300');
+        tucButton.querySelector('span:first-child').classList.add('bg-red-500');
+        hokButton.querySelector('span:first-child').classList.remove('bg-red-500');
+        hokButton.querySelector('span:first-child').classList.add('bg-gray-300');
+      } else {
+        hokButton.querySelector('span:first-child').classList.remove('bg-gray-300');
+        hokButton.querySelector('span:first-child').classList.add('bg-red-500');
+        tucButton.querySelector('span:first-child').classList.remove('bg-red-500');
+        tucButton.querySelector('span:first-child').classList.add('bg-gray-300');
+      }
+    }
+    
+    // Event listeners
+    tucButton.addEventListener('click', () => {
+      selectedDirection = 'UP';
+      updateSelectionUI();
+      fetchData();
+    });
+    
+    hokButton.addEventListener('click', () => {
+      selectedDirection = 'DOWN';
+      updateSelectionUI();
+      fetchData();
+    });
+    
+    refreshButton.addEventListener('click', fetchData);
+    
+    // Format time as HH:MM
+    function formatTime(dateStr) {
+      const date = new Date(dateStr);
+      return date.toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+      });
+    }
+    
+    // Parse time string to Date object
+    function parseTime(timeStr) {
+      return new Date(timeStr);
+    }
+    
+    // Add minutes to a date
+    function addMinutes(date, minutes) {
+      return new Date(date.getTime() + minutes * 60000);
+    }
+    
+    // Calculate wait time in minutes between two dates
+    function getWaitTimeMinutes(startTime, endTime) {
+      return Math.round((endTime - startTime) / 60000);
+    }
+    
+    // Generate future train times based on known train schedule
+    function generateFutureTrains(tclTrains, lastTime, count = 3) {
+      const futureTrains = [];
+      
+      // Calculate intervals between known trains
+      const intervals = [];
+      for (let i = 1; i < tclTrains.length; i++) {
+        const prevTime = parseTime(tclTrains[i-1].time);
+        const currentTime = parseTime(tclTrains[i].time);
+        intervals.push(getWaitTimeMinutes(prevTime, currentTime));
+      }
+      
+      // If we have at least one interval
+      if (intervals.length > 0) {
+        // Use the actual intervals pattern for more realistic estimates
+        const lastKnownTime = parseTime(lastTime);
+        let nextTime = lastKnownTime;
+        
+        for (let i = 0; i < count; i++) {
+          // Use the interval pattern cyclically (if we have multiple intervals)
+          const intervalIndex = i % intervals.length;
+          const intervalMinutes = intervals[intervalIndex];
+          
+          nextTime = addMinutes(nextTime, intervalMinutes);
+          
+          futureTrains.push({
+            time: nextTime.toISOString(),
+            dest: selectedDirection === 'UP' ? 'TUC' : 'HOK',
+            estimated: true
+          });
+        }
+      }
+      
+      return futureTrains;
+    }
+    
+    // Fetch data from both APIs
+    async function fetchData() {
+      // Show loading, hide results and error
+      loadingElement.classList.remove('hidden');
+      resultsElement.classList.add('hidden');
+      errorElement.classList.add('hidden');
+      
+      try {
+        // Fetch data from both APIs in parallel
+        const [drlResponse, tclResponse] = await Promise.all([
+          fetch(DRL_API),
+          fetch(TCL_API)
+        ]);
+        
+        if (!drlResponse.ok || !tclResponse.ok) {
+          throw new Error('Failed to fetch data');
+        }
+        
+        const drlData = await drlResponse.json();
+        const tclData = await tclResponse.json();
+        
+        // Process and display data
+        processData(drlData, tclData);
+        
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        errorElement.classList.remove('hidden');
+      } finally {
+        loadingElement.classList.add('hidden');
+      }
+    }
+    
+    // Process and display the data
+    function processData(drlData, tclData) {
+      // Extract trains data
+      const disTrains = drlData.data['DRL-DIS'].UP || [];
+      
+      // Make sure we're getting the correct direction trains from TCL
+      let tclTrains = tclData.data['TCL-SUN'][selectedDirection] || [];
+      
+      // If no trains data available, show error
+      if (disTrains.length === 0 || tclTrains.length === 0) {
+        errorElement.textContent = 'No trains schedule available at this time.';
+        errorElement.classList.remove('hidden');
+        return;
+      }
+      
+      // Sort TCL trains by time (ensure they're in chronological order)
+      tclTrains.sort((a, b) => parseTime(a.time) - parseTime(b.time));
+      
+      // Generate more future TCL trains to ensure we have enough for all DIS connections
+      const lastTclTrain = tclTrains[tclTrains.length - 1];
+      const futureTrains = generateFutureTrains(tclTrains, lastTclTrain.time, 5);
+      
+      // Combine known and future trains
+      const allTclTrains = [...tclTrains, ...futureTrains];
+      
+      // Display DIS trains
+      renderDisTrains(disTrains);
+      
+      // Calculate and display connections
+      calculateConnections(disTrains, allTclTrains);
+      
+      // Show results
+      resultsElement.classList.remove('hidden');
+    }
+    
+    // Render Disneyland trains
+    function renderDisTrains(disTrains) {
+      disTrainsElement.innerHTML = '';
+      
+      disTrains.slice(0, 4).forEach(train => {
+        const trainTime = parseTime(train.time);
+        const timeStr = formatTime(trainTime);
+        const minutesLeft = parseInt(train.ttnt, 10);
+        
+        const trainElement = document.createElement('div');
+        trainElement.className = 'bg-gray-50 border border-gray-200 rounded-lg p-3 flex items-center justify-between';
+        trainElement.innerHTML = `
+          <div class="flex items-center">
+            <div class="w-1 h-8 bg-drl-purple mr-3"></div>
+            <span class="font-medium">${timeStr}</span>
+          </div>
+          <div class="bg-mtr-yellow bg-opacity-30 text-yellow-800 px-2 py-1 rounded text-sm font-medium">
+            ${minutesLeft} min
+          </div>
+        `;
+        
+        disTrainsElement.appendChild(trainElement);
+      });
+    }
+    
+    // Calculate and display connections
+    function calculateConnections(disTrains, tclTrains) {
+      connectionsElement.innerHTML = '';
+      
+      // Calculate average interval between TCL trains
+      let avgInterval = 7; // Default if can't calculate
+      if (tclTrains.length >= 2) {
+        let totalInterval = 0;
+        for (let i = 1; i < tclTrains.length; i++) {
+          const time1 = parseTime(tclTrains[i-1].time);
+          const time2 = parseTime(tclTrains[i].time);
+          totalInterval += getWaitTimeMinutes(time1, time2);
+        }
+        avgInterval = Math.round(totalInterval / (tclTrains.length - 1));
+      }
+      
+      disTrains.slice(0, 4).forEach(disTrain => {
+        // Parse DIS departure time
+        const disTime = parseTime(disTrain.time);
+        
+        // Calculate arrival time at SUN (DIS + 6 minutes)
+        const sunArrivalTime = addMinutes(disTime, 6);
+        
+        // Find the next available TCL train after arriving at SUN
+        let nextTrain = null;
+        let waitTime = 0;
+        
+        for (const tclTrain of tclTrains) {
+          const tclTime = parseTime(tclTrain.time);
+          
+          // Skip trains that depart before we arrive at SUN
+          if (tclTime > sunArrivalTime) {
+            nextTrain = tclTrain;
+            waitTime = getWaitTimeMinutes(sunArrivalTime, tclTime);
+            break;
+          }
+        }
+        
+        // Create connection card
+        const connectionCard = document.createElement('div');
+        connectionCard.className = 'bg-gray-50 border border-gray-200 rounded-lg p-4';
+        
+        if (nextTrain) {
+          const tclTimeFormatted = nextTrain.estimated 
+            ? formatTime(nextTrain.time) + ' (estimated)'
+            : formatTime(nextTrain.time);
+            
+          const destination = nextTrain.dest === 'TUC' ? 'Tung Chung' : 'Hong Kong';
+          
+          // Determine connection time color based on urgency
+          let connectionTimeClass = '';
+          let connectionBgClass = '';
+          
+          // Apply styling based on connection time
+          if (waitTime <= 2) {
+            // Urgent connection (≤ 2 minutes)
+            connectionTimeClass = 'text-white font-bold';
+            connectionBgClass = 'bg-red-500';
+          } else if (waitTime > avgInterval / 2) {
+            // Bad connection (> half of average interval)
+            connectionTimeClass = 'text-yellow-800 font-bold';
+            connectionBgClass = 'bg-yellow-300';
+          } else {
+            // Good connection
+            connectionTimeClass = 'text-green-800 font-bold';
+            connectionBgClass = 'bg-green-300';
+          }
+          
+          // Create journey display with MTR-style route visualization
+          connectionCard.innerHTML = `
+            <div class="flex mb-4 relative">
+              <!-- DRL Station -->
+              <div class="flex flex-col items-center w-1/4">
+                <div class="w-5 h-5 rounded-full bg-drl-purple border-2 border-white z-10"></div>
+                <div class="text-xs text-center mt-1">Disneyland</div>
+                <div class="font-bold text-sm">${formatTime(disTime)}</div>
+              </div>
+              
+              <!-- Line between stations -->
+              <div class="absolute top-2.5 left-0 w-full h-1 bg-gray-300 z-0"></div>
+              
+              <!-- SUN Station -->
+              <div class="flex flex-col items-center w-1/2">
+                <div class="w-5 h-5 rounded-full bg-tcl-orange border-2 border-white z-10"></div>
+                <div class="text-xs text-center mt-1">Sunny Bay</div>
+                <div class="font-bold text-sm">${formatTime(sunArrivalTime)}</div>
+              </div>
+              
+              <!-- Destination Station -->
+              <div class="flex flex-col items-center w-1/4">
+                <div class="w-5 h-5 rounded-full bg-tcl-orange border-2 border-white z-10"></div>
+                <div class="text-xs text-center mt-1">${destination}</div>
+                <div class="font-bold text-sm">${tclTimeFormatted}</div>
+              </div>
+            </div>
+            
+            <div class="flex justify-between items-center mt-3 pt-3 border-t border-gray-200">
+              <div class="flex items-center text-sm text-gray-500">
+                <div class="w-2 h-2 rounded-full ${nextTrain.estimated ? 'bg-orange-500' : 'bg-green-500'} mr-1"></div>
+                <span>${nextTrain.estimated ? 'Estimated' : 'Confirmed'} connection</span>
+              </div>
+              <div class="${connectionBgClass} px-4 py-2 rounded-lg text-base ${connectionTimeClass}">
+                ${waitTime} min wait
+              </div>
+            </div>
+          `;
+        } else {
+          connectionCard.innerHTML = `
+            <div class="text-center py-4 text-gray-500">
+              No connecting trains available in the current schedule.
+            </div>
+          `;
+        }
+        
+        connectionsElement.appendChild(connectionCard);
+      });
+    }
+    
+    // Initialize selection UI
+    updateSelectionUI();
+    
+    // Initial data fetch
+    fetchData();
+  </script>
+</body>
+</html>

@@ -171,7 +171,7 @@
         </svg>
         <div>
           <p class="mb-1"><strong>How this works:</strong> This app shows the best connections between Disneyland Resort Line and Tung Chung Line at Sunny Bay station.</p>
-          <p>Journey time from Disneyland to Sunny Bay is approximately 6 minutes.</p>
+          <p>Journey time from Disneyland to Sunny Bay is approximately 5 minutes.</p>
         </div>
       </div>
     </div>
@@ -416,8 +416,8 @@
         // Parse DIS departure time
         const disTime = parseTime(disTrain.time);
         
-        // Calculate arrival time at SUN (DIS + 6 minutes)
-        const sunArrivalTime = addMinutes(disTime, 6);
+        // Calculate arrival time at SUN (DIS + 5 minutes)
+        const sunArrivalTime = addMinutes(disTime, 5);
         
         // Find the next available TCL train after arriving at SUN
         let nextTrain = null;
@@ -427,7 +427,7 @@
           const tclTime = parseTime(tclTrain.time);
           
           // Skip trains that depart before we arrive at SUN
-          if (tclTime > sunArrivalTime) {
+          if (tclTime >= sunArrivalTime) {
             nextTrain = tclTrain;
             waitTime = getWaitTimeMinutes(sunArrivalTime, tclTime);
             break;
